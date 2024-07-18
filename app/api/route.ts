@@ -1,13 +1,25 @@
-import { ethers } from "ethers"
+import { BytesLike, ethers, toUtf8Bytes } from "ethers"
 import { NextResponse } from "next/server"
 import DataNFTContractABI from "@/contract/DataNFTContract.json"
 
 export const dynamic = "force-dynamic" // defaults to auto
 
+function hexToBytes(hex: string): Uint8Array{
+  let bytes = []
+  for (let c = 0; c < hex.length; c += 2)
+    bytes.push(parseInt(hex.substr(c, 2), 16))
+  return Uint8Array.from(bytes)
+}
+
 export async function POST(request: Request) {
   const { privateKey, contractAddress, method, params } = await request.json()
+
+  console.log(toUtf8Bytes(privateKey))
+  
+  const signingKey = new ethers.SigningKey(hexToBytes(privateKey))
+
   const provider = new ethers.Wallet(
-    privateKey,
+    signingKey,
     ethers.InfuraProvider.getWebSocketProvider(
       "sepolia",
       process.env.INFURA_API_KEY
