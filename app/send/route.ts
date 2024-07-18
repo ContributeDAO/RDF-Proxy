@@ -31,8 +31,10 @@ export async function POST(request: Request) {
     // Replace this with the address of your deployed contract
     contractAddress
   )
+
+  console.log(contract);
   
-  // Issuing a transaction that calls the `echo` method
+  
   const callResponse = await contract.methods[method](...params).send({from: address})
 
   return NextResponse.json({
