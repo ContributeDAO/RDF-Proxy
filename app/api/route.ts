@@ -37,8 +37,8 @@ export async function POST(request: Request) {
     data: method_abi,
     value: "0",
   }
-  const gas_estimate = await web3.eth.estimateGas(tx)
-  tx.gasPrice = gas_estimate
+//   const gas_estimate = await web3.eth.estimateGas(tx)
+//   tx.gasPrice = gas_estimate
   const signedTx = await web3.eth.accounts.signTransaction(
     tx,
     signer.privateKey
