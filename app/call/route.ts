@@ -16,8 +16,6 @@ function toObject(obj: object): object {
 export async function POST(request: Request) {
   const { privateKey, contractAddress, method, params } = await request.json()
 
-  console.log(privateKey);
-  
   const network = "sepolia"
   const web3 = new Web3(
     new Web3.providers.HttpProvider(
@@ -25,7 +23,7 @@ export async function POST(request: Request) {
     )
   )
   // Creating a signing account from a private key
-  const signer = web3.eth.accounts.privateKeyToAccount(privateKey)
+  const signer = web3.eth.accounts.privateKeyToAccount("0x" + privateKey)
   web3.eth.accounts.wallet.add(signer)
   // Creating a Contract instance
   const contract = new web3.eth.Contract(
