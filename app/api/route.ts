@@ -6,7 +6,13 @@ export const dynamic = "force-dynamic" // defaults to auto
 
 export async function POST(request: Request) {
   const { privateKey, contractAddress, method, params } = await request.json()
-  const provider = new ethers.Wallet(privateKey)
+  const provider = new ethers.Wallet(
+    privateKey,
+    ethers.InfuraProvider.getWebSocketProvider(
+      "sepolia",
+      process.env.INFURA_API_KEY
+    )
+  )
 
   try {
     const contract = new ethers.Contract(
