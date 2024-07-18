@@ -33,7 +33,7 @@ export async function POST(request: Request) {
   )
   
   // Issuing a transaction that calls the `echo` method
-  const callResponse = await contract.methods[method](...params).send({from: privateAddress})
+  const callResponse = await contract.methods[method](...params).send({from: address})
 
   return NextResponse.json({
     status: "success",
