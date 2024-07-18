@@ -16,6 +16,8 @@ function toObject(obj: object): object {
 export async function POST(request: Request) {
   const { privateKey, contractAddress, method, params } = await request.json()
 
+  console.log(privateKey);
+  
   const network = "sepolia"
   const web3 = new Web3(
     new Web3.providers.HttpProvider(
@@ -33,8 +35,6 @@ export async function POST(request: Request) {
   )
   // Issuing a transaction that calls the `echo` method
   const callResponse = await contract.methods[method](...params).call()
-
-  let receipt
 
   return NextResponse.json({
     status: "success",
