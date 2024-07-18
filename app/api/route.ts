@@ -11,7 +11,8 @@ export async function POST(request: Request) {
   try {
     const contract = new ethers.Contract(
       contractAddress,
-      DataNFTContractABI.abi
+      DataNFTContractABI.abi,
+      provider
     )
 
     // sign the transaction
