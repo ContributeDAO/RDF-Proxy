@@ -1,4 +1,4 @@
-import CampaignABI from "@/contract/Campaign.json"
+import CampaignABI from "@/contract/NewCampaign.json"
 import { NextResponse } from "next/server"
 import Web3 from "web3"
 
