@@ -1,22 +1,27 @@
 import { ethers } from "ethers"
 import { NextResponse } from "next/server"
+import DataNFTContractABI from "@/contract/DataNFTContract.json"
 
 export const dynamic = "force-dynamic" // defaults to auto
 
 export async function POST(request: Request) {
-  const provider = new ethers.JsonRpcProvider(process.env.ETHEREUM_RPC_URL)
-  const { contractAddress, abi, method, params } = await request.json()
-  let contractData = {}
+  const { privateKey, contractAddress, method, params } = await request.json()
+  const provider = new ethers.Wallet(privateKey)
 
   try {
-    const contract = new ethers.Contract(contractAddress, abi, provider)
-    // Example of calling a contract method that does not mutate state
-    const data = await contract[method](...params)
-    contractData = { contractAddress, data } // Store or process data as needed
+    const contract = new ethers.Contract(
+      contractAddress,
+      DataNFTContractABI.abi
+    )
+
+    // sign the transaction
+    const transaction = await contract[method](...params)
+    const tx = await provider.sendTransaction(transaction)
+
     return NextResponse.json({
       success: true,
       message: "Data fetched successfully",
-      contractData,
+      tx,
     })
   } catch (error) {
     console.error("Error interacting with the contract:", error)
