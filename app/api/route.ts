@@ -1,10 +1,10 @@
-import { BytesLike, ethers, toUtf8Bytes } from "ethers"
-import { NextResponse } from "next/server"
 import DataNFTContractABI from "@/contract/DataNFTContract.json"
+import { NextResponse } from "next/server"
+import Web3, { Transaction } from "web3"
 
 export const dynamic = "force-dynamic" // defaults to auto
 
-function hexToBytes(hex: string): Uint8Array{
+function hexToBytes(hex: string): Uint8Array {
   let bytes = []
   for (let c = 0; c < hex.length; c += 2)
     bytes.push(parseInt(hex.substr(c, 2), 16))
@@ -14,36 +14,63 @@ function hexToBytes(hex: string): Uint8Array{
 export async function POST(request: Request) {
   const { privateKey, contractAddress, method, params } = await request.json()
 
-  console.log(toUtf8Bytes(privateKey))
-  
-  const signingKey = new ethers.SigningKey(hexToBytes(privateKey))
-
-  const provider = new ethers.Wallet(
-    signingKey,
-    ethers.InfuraProvider.getWebSocketProvider(
-      "sepolia",
-      process.env.INFURA_API_KEY
+  const network = "sepolia"
+  const web3 = new Web3(
+    new Web3.providers.HttpProvider(
+      `https://${network}.infura.io/v3/${process.env.INFURA_API_KEY}`
     )
   )
-
-  try {
-    const contract = new ethers.Contract(
-      contractAddress,
-      DataNFTContractABI.abi,
-      provider
-    )
-
-    // sign the transaction
-    const transaction = await contract[method](...params)
-    const tx = await provider.sendTransaction(transaction)
-
-    return NextResponse.json({
-      success: true,
-      message: "Data fetched successfully",
-      tx,
-    })
-  } catch (error) {
-    console.error("Error interacting with the contract:", error)
-    return NextResponse.json({ success: false, error: error })
+  // Creating a signing account from a private key
+  const signer = web3.eth.accounts.privateKeyToAccount("0x" + privateKey)
+  web3.eth.accounts.wallet.add(signer)
+  // Creating a Contract instance
+  const contract = new web3.eth.Contract(
+    DataNFTContractABI.abi,
+    // Replace this with the address of your deployed contract
+    contractAddress
+  )
+  // Issuing a transaction that calls the `echo` method
+  const method_abi = contract.methods[method](...params).encodeABI()
+  const tx: Transaction = {
+    from: signer.address,
+    to: contract.options.address,
+    data: method_abi,
+    value: "0",
   }
+  const gas_estimate = await web3.eth.estimateGas(tx)
+  tx.gasPrice = gas_estimate
+  const signedTx = await web3.eth.accounts.signTransaction(
+    tx,
+    signer.privateKey
+  )
+  console.log("Raw transaction data: " + signedTx.rawTransaction)
+  // Sending the transaction to the network
+  const receipt = await web3.eth
+    .sendSignedTransaction(signedTx.rawTransaction)
+    .once("transactionHash", (txhash) => {
+      console.log(`Mining transaction ...`)
+      console.log(`https://${network}.etherscan.io/tx/${txhash}`)
+    })
+  // The transaction is now on chain!
+  console.log(`Mined in block ${receipt.blockNumber}`)
+
+  const representation = {
+    blockHash: receipt.blockHash,
+    blockNumber: receipt.blockNumber,
+    contractAddress: receipt.contractAddress,
+    cumulativeGasUsed: receipt.cumulativeGasUsed,
+    from: receipt.from,
+    gasUsed: receipt.gasUsed,
+    logs: receipt.logs,
+    logsBloom: receipt.logsBloom,
+    status: receipt.status,
+    to: receipt.to,
+    transactionHash: receipt.transactionHash,
+    transactionIndex: receipt.transactionIndex,
+  }
+
+  return NextResponse.json({
+    status: "success",
+    transaction: representation,
+  })
 }
