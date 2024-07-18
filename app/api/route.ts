@@ -23,7 +23,7 @@ export async function POST(request: Request) {
     )
   )
   // Creating a signing account from a private key
-  const signer = web3.eth.accounts.privateKeyToAccount("0x" + privateKey)
+  const signer = web3.eth.accounts.privateKeyToAccount(privateKey)
   web3.eth.accounts.wallet.add(signer)
   // Creating a Contract instance
   const contract = new web3.eth.Contract(
