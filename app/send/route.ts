@@ -1,6 +1,6 @@
 import CampaignABI from "@/contract/Campaign.json"
 import { NextResponse } from "next/server"
-import Web3, { Transaction } from "web3"
+import Web3 from "web3"
 
 export const dynamic = "force-dynamic" // defaults to auto
 
