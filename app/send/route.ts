@@ -1,6 +1,6 @@
-import CampaignABI from "@/contract/NewCampaign.json"
+import DataPunkABI from "@/solidity/contracts/artifacts/RebellionDataFunder.json"
 import { NextResponse } from "next/server"
-import Web3 from "web3"
+import Web3, { PayableCallOptions } from "web3"
 
 export const dynamic = "force-dynamic" // defaults to auto
 
@@ -27,15 +27,26 @@ export async function POST(request: Request) {
   web3.eth.accounts.wallet.add(signer)
   // Creating a Contract instance
   const contract = new web3.eth.Contract(
-    CampaignABI,
+    DataPunkABI.abi,
     // Replace this with the address of your deployed contract
     contractAddress
   )
 
   console.log(contract);
+
+  // get gas price and estimate gas
+  const gasPrice = await web3.eth.getGasPrice()
+  const gas = await contract.methods[method](...params).estimateGas({ from: address })
+
   
+  const options: PayableCallOptions = {
+    from: address,
+    gas: gas.toString(),
+    gasPrice: gasPrice.toString(),
+    value: "0",
+  }
   
-  const callResponse = await contract.methods[method](...params).send({from: address})
+  const callResponse = await contract.methods[method](...params).send(options)
 
   return NextResponse.json({
     status: "success",

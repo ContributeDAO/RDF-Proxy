@@ -1,4 +1,4 @@
-import CampaignABI from "@/contract/Campaign.json"
+import DataPunkABI from "@/solidity/contracts/artifacts/RebellionDataFunder.json"
 import { NextResponse } from "next/server"
 import Web3 from "web3"
 
@@ -27,7 +27,7 @@ export async function POST(request: Request) {
   web3.eth.accounts.wallet.add(signer)
   // Creating a Contract instance
   const contract = new web3.eth.Contract(
-    CampaignABI,
+    DataPunkABI.abi,
     // Replace this with the address of your deployed contract
     contractAddress
   )
